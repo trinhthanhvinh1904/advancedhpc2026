@@ -70,4 +70,5 @@ if __name__ == "__main__":
     axes[1].set_title(f"GPU Result\nTime: {gpu_time} seconds")
     axes[1].axis("off")
     plt.tight_layout()
+    plt.savefig("result.jpg")
     plt.show()
