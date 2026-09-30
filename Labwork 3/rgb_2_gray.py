@@ -20,12 +20,15 @@ def rgb2gray_cpu(rgb):
     return pixels
 
 def rgb2gray_cpu_time(rgb):
+    pixels, original_image = preprocessing(rgb)
+    height, width, channels = original_image.shape
     start_time = time.time()
     pixels = rgb2gray_cpu(rgb)
     end_time = time.time()
     runtime = end_time - start_time
     print(f"CPU time: {runtime} seconds")
-    return pixels, runtime
+    final_3d_image = pixels.reshape(height, width, 3)
+    return final_3d_image, runtime
 
 @cuda.jit
 def rgb2gray_gpu(pixels, gray_pixels):
@@ -40,6 +43,8 @@ def rgb2gray_gpu(pixels, gray_pixels):
         gray_pixels[tidx, 2] = gray
 
 def rgb2gray_gpu_time(rgb):
+    pixels, original_image = preprocessing(rgb)
+    height, width, channels = original_image.shape
     pixels = preprocessing(rgb)[0]
     pixels_count = pixels.shape[0]
     block_size = 64
@@ -52,16 +57,14 @@ def rgb2gray_gpu_time(rgb):
     end_time = time.time()
     runtime = end_time - start_time
     print(f"GPU time: {runtime} seconds")
-    return devDst.copy_to_host(), runtime
+    flat_result = devDst.copy_to_host()
+    final_3d_image = flat_result.reshape(height, width, 3)
+    return final_3d_image, runtime
 
 if __name__ == "__main__":
     rgb = "images.jpg"    
-    cpu_result, cpu_time = rgb2gray_cpu_time(rgb)
-    _, original_image = preprocessing(rgb)
-    height, width, channels = original_image.shape
-    cpu_result_image = cpu_result.reshape(height, width, 3)  
-    gpu_result, gpu_time = rgb2gray_gpu_time(rgb)
-    gpu_result_image = gpu_result.reshape(height, width, 3)
+    cpu_result_image, cpu_time = rgb2gray_cpu_time(rgb)
+    gpu_result_image, gpu_time = rgb2gray_gpu_time(rgb)
     fig, axes = plt.subplots(1, 2, figsize=(12, 6))
     axes[0].imshow(cpu_result_image)
     axes[0].set_title(f"CPU Result\nTime: {cpu_time} seconds")
