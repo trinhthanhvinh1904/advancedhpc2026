@@ -11,8 +11,8 @@ def preprocessing(rgb):
     pixels = image_for_cuda.reshape(-1, channels)
     return pixels, image_for_cuda
 
-def rgb2gray_cpu(rgb):
-    pixels = preprocessing(rgb)[0]
+def rgb2gray_cpu(pixels):
+    pixels = pixels.copy()
     for i in range(pixels.shape[0]):
         r, g, b = pixels[i]
         gray = np.uint8((r / 3.0) + (g / 3.0) + (b / 3.0))
@@ -23,7 +23,7 @@ def rgb2gray_cpu_time(rgb):
     pixels, original_image = preprocessing(rgb)
     height, width, channels = original_image.shape
     start_time = time.time()
-    pixels = rgb2gray_cpu(rgb)
+    pixels = rgb2gray_cpu(pixels)
     end_time = time.time()
     runtime = end_time - start_time
     print(f"CPU time: {runtime} seconds")
@@ -45,7 +45,6 @@ def rgb2gray_gpu(pixels, gray_pixels):
 def rgb2gray_gpu_time(rgb):
     pixels, original_image = preprocessing(rgb)
     height, width, channels = original_image.shape
-    pixels = preprocessing(rgb)[0]
     pixels_count = pixels.shape[0]
     block_size = 64
     grid_size = (pixels_count + block_size - 1) // block_size
