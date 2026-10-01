@@ -42,21 +42,24 @@ def rgb2gray_gpu(pixels, gray_pixels):
         gray_pixels[tidx, 1] = gray
         gray_pixels[tidx, 2] = gray
 
-def rgb2gray_gpu_time(rgb, repeats=60):
+def rgb2gray_gpu_time(rgb, repeats = 5):
     pixels, original_image = preprocessing(rgb)
     height, width, channels = original_image.shape
     pixels_count = pixels.shape[0]
-    block_size = 64
+    block_size = 1024
     grid_size = (pixels_count + block_size - 1) // block_size
     devScr = cuda.to_device(pixels)
     devDst = cuda.device_array((pixels_count, 3), dtype=np.uint8)
+
+    #warmup
     rgb2gray_gpu[grid_size, block_size](devScr, devDst)
     cuda.synchronize()
-    start_time = time.time()
+
+    start_time = time.perf_counter()
     for _ in range(repeats):
         rgb2gray_gpu[grid_size, block_size](devScr, devDst)
     cuda.synchronize()
-    end_time = time.time()
+    end_time = time.perf_counter()
     runtime = (end_time - start_time) / repeats
     print(f"GPU time (block size {block_size}): {runtime} seconds")
     flat_result = devDst.copy_to_host()
