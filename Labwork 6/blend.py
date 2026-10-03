@@ -55,8 +55,8 @@ def blend_gpu_time(img1_path, img2_path, c=0.5, repeats=5, block_size=(32,32)):
     return result, runtime
 
 if __name__ == "__main__":
-    img1_path = "image1.jpg"
-    img2_path = "image2.jpg"
+    img1_path = "img1.jpg"
+    img2_path = "img2.jpg"
     c = 0.5
     if len(sys.argv) >= 3:
         img1_path = sys.argv[1]
